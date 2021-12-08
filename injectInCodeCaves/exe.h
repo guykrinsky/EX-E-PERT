@@ -8,7 +8,7 @@ struct Exe_file
     PIMAGE_DOS_HEADER dosHeader;
     PIMAGE_NT_HEADERS headers;
     PIMAGE_SECTION_HEADER last_section;
-    DWORD entery_address;
+    DWORD entry_address;
     DWORD file_size;
 };
 

