@@ -21,10 +21,9 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{583378d4-e8fb-4856-a45e-a084d469f45c}</ProjectGuid>
-    <RootNamespace>virus</RootNamespace>
+    <ProjectGuid>{a234e717-2277-4e46-96b3-0f9a53acb8ca}</ProjectGuid>
+    <RootNamespace>injectInCodeCaves</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>keyLogger</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -140,10 +139,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="main.c" />
+    <ClCompile Include="exe.c" />
+    <ClCompile Include="infect_main.c" />
+    <ClCompile Include="shellcode.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="return_codes.h" />
+    <ClInclude Include="exe.h" />
+    <ClInclude Include="shellcode.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
