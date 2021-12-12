@@ -6,7 +6,7 @@
 
 DWORD set_exe_headers(EXE_file* exe_file)
 {
-    PIMAGE_SECTION_HEADER first_section_header = { 0 };
+    PIMAGE_SECTION_HEADER first_section_header = NULL;
     exe_file->dosHeader = exe_file->mapped_handle;
     DWORD relocation_table_end = 0;
 
@@ -29,8 +29,8 @@ DWORD set_exe_headers(EXE_file* exe_file)
         return ERROR;
     }
     exe_file->entry_address = (DWORD)exe_file->headers->OptionalHeader.ImageBase + exe_file->headers->OptionalHeader.AddressOfEntryPoint;
-    first_section_header = (PIMAGE_SECTION_HEADER)IMAGE_FIRST_SECTION(exe_file->headers);
-    exe_file->last_section = (PIMAGE_SECTION_HEADER)(first_section_header + exe_file->headers->FileHeader.NumberOfSections - 1);
+    //first_section_header = (PIMAGE_SECTION_HEADER)IMAGE_FIRST_SECTION(exe_file->headers);
+    //exe_file->last_section = (PIMAGE_SECTION_HEADER)(first_section_header + exe_file->headers->FileHeader.NumberOfSections - 1);
 
 
     return SUCCESS;

@@ -7,7 +7,7 @@ struct Exe_file
     LPBYTE mapped_handle;
     PIMAGE_DOS_HEADER dosHeader;
     PIMAGE_NT_HEADERS headers;
-    PIMAGE_SECTION_HEADER last_section;
+    PIMAGE_SECTION_HEADER infected_section;
     DWORD entry_address;
     DWORD file_size;
 };

