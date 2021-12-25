@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{a234e717-2277-4e46-96b3-0f9a53acb8ca}</ProjectGuid>
-    <RootNamespace>injectInCodeCaves</RootNamespace>
+    <ProjectGuid>{bafe1b6a-ca6c-4bc1-a057-f17345e073a2}</ProjectGuid>
+    <RootNamespace>shellcode</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -139,13 +139,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="exe.c" />
-    <ClCompile Include="infect_main.c" />
-    <ClCompile Include="shellcode_functions.c" />
+    <ClCompile Include="shellcode.c" />
+    <ClCompile Include="shellcode_checker.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="exe.h" />
-    <ClInclude Include="shellcode_functions.h" />
+    <ClInclude Include="shellcode_header.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

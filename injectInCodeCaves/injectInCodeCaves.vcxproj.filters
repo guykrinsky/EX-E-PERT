@@ -19,7 +19,7 @@
     <ClCompile Include="exe.c">
       <Filter>PE_format</Filter>
     </ClCompile>
-    <ClCompile Include="shellcode.c">
+    <ClCompile Include="shellcode_functions.c">
       <Filter>shellcode</Filter>
     </ClCompile>
   </ItemGroup>
@@ -27,7 +27,7 @@
     <ClInclude Include="exe.h">
       <Filter>PE_format</Filter>
     </ClInclude>
-    <ClInclude Include="shellcode.h">
+    <ClInclude Include="shellcode_functions.h">
       <Filter>shellcode</Filter>
     </ClInclude>
   </ItemGroup>

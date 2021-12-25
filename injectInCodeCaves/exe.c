@@ -30,7 +30,6 @@ DWORD set_exe_headers(EXE_file* exe_file)
     }
     exe_file->entry_address = (DWORD)exe_file->headers->OptionalHeader.ImageBase + exe_file->headers->OptionalHeader.AddressOfEntryPoint;
     //first_section_header = (PIMAGE_SECTION_HEADER)IMAGE_FIRST_SECTION(exe_file->headers);
-    //exe_file->last_section = (PIMAGE_SECTION_HEADER)(first_section_header + exe_file->headers->FileHeader.NumberOfSections - 1);
 
 
     return SUCCESS;
