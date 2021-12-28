@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{bafe1b6a-ca6c-4bc1-a057-f17345e073a2}</ProjectGuid>
-    <RootNamespace>shellcode</RootNamespace>
+    <ProjectGuid>{748906ea-71eb-41b0-a76e-9dc0445b8a28}</ProjectGuid>
+    <RootNamespace>shellcodechecker</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -139,10 +139,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="shellcode.c" />
+    <ClCompile Include="shellcode_test.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="shellcode_header.h" />
+    <ClInclude Include="shellcode_test.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

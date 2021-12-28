@@ -11,6 +11,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "keyLogger", "keylogger\viru
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "shellcode", "shellcode\shellcode.vcxproj", "{BAFE1B6A-CA6C-4BC1-A057-F17345E073A2}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "shellcode_checker", "shellcode_checker\shellcode_checker.vcxproj", "{748906EA-71EB-41B0-A76E-9DC0445B8A28}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -51,6 +53,14 @@ Global
 		{BAFE1B6A-CA6C-4BC1-A057-F17345E073A2}.Release|x64.Build.0 = Release|x64
 		{BAFE1B6A-CA6C-4BC1-A057-F17345E073A2}.Release|x86.ActiveCfg = Release|Win32
 		{BAFE1B6A-CA6C-4BC1-A057-F17345E073A2}.Release|x86.Build.0 = Release|Win32
+		{748906EA-71EB-41B0-A76E-9DC0445B8A28}.Debug|x64.ActiveCfg = Debug|x64
+		{748906EA-71EB-41B0-A76E-9DC0445B8A28}.Debug|x64.Build.0 = Debug|x64
+		{748906EA-71EB-41B0-A76E-9DC0445B8A28}.Debug|x86.ActiveCfg = Debug|Win32
+		{748906EA-71EB-41B0-A76E-9DC0445B8A28}.Debug|x86.Build.0 = Debug|Win32
+		{748906EA-71EB-41B0-A76E-9DC0445B8A28}.Release|x64.ActiveCfg = Release|x64
+		{748906EA-71EB-41B0-A76E-9DC0445B8A28}.Release|x64.Build.0 = Release|x64
+		{748906EA-71EB-41B0-A76E-9DC0445B8A28}.Release|x86.ActiveCfg = Release|Win32
+		{748906EA-71EB-41B0-A76E-9DC0445B8A28}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

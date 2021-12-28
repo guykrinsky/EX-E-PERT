@@ -1,5 +1,8 @@
 #include <Windows.h>
-#include "shellcode_header.h"
+#include <stdio.h>
+#include "shellcode_test.h"
+
+#define ORIGINAL_ENTERY_ADDRESS_PLACE_HOLDER 0xBBBBBBBB
 
 #define TO_LOWER(c){\
 			if(c >= 'A' && c <= 'Z')\
@@ -24,11 +27,17 @@ __forceinline BOOL str_cmp(PWCHAR str1, PWCHAR str2)
 
 __forceinline inline BOOL str_cmp2(PCHAR str1, PCHAR str2)
 {
-	while (*str1 != 0 && *str2 != 0 && *str1 == *str2)
+	char current_char_a = '0';
+	char current_char_b = '0';
+	do
 	{
+		current_char_a = *str1;
+		current_char_b = *str2;
+		TO_LOWER(current_char_a);
+		TO_LOWER(current_char_b);
 		str1 += 1;
 		str2 += 1;
-	}
+	} 	while (*str1 != 0 && *str2 != 0 && current_char_a == current_char_b);
 	if (*str1 == 0 && *str2 == 0)
 		return TRUE;
 	return FALSE;
@@ -68,16 +77,11 @@ __forceinline LPVOID get_module_by_name(PWCHAR module_name)
 {
 	PPEB peb;
 	peb = 0;
-	/*_asm
+	_asm
 	{
 		mov eax, fs: [0x30]
 		mov[peb], eax
-	}*/
-#if defined(_WIN64)
-	peb = (PPEB)__readgsqword(0x60);
-#else
-	peb = (PPEB)__readfsdword(0x30);
-#endif
+	}
 	PPEB_LDR_DATA ldr = peb->Ldr;
 	LIST_ENTRY list = ldr->InLoadOrderModuleList;
 	PLDR_DATA_TABLE_ENTRY Flink = *((PLDR_DATA_TABLE_ENTRY*)(&list));
@@ -97,21 +101,47 @@ __forceinline LPVOID get_module_by_name(PWCHAR module_name)
 
 int main(VOID)
 {
-	HMODULE user32_dll;
+	HMODULE user32_dll = NULL;
 	DWORD* dwptr;
 	HANDLE hProcess;
 	char msg_box_content[] = { 'e','x','p','l','o','r','e','r','.','e','x','e',0 };
-	WCHAR user32_dll_name[] = { 'u', 's', 'e', 'r', '3','2','.','d','l','l', 0 };
+	char user32_dll_name[] = { 'u', 's', 'e', 'r', '3','2','.','d','l','l', 0 };
 	char msgbox_name[] = { 'M', 'e', 's', 's', 'a','g','e','B','o','x', 'A', 0 };
+	char load_library_name[] = { 'l', 'o', 'a', 'd', 'l', 'i', 'b', 'r', 'a', 'r', 'y', 'A', 0 };
+	char get_proc_address_name[] = { 'g', 'e', 't', 'P', 'r', 'o', 'c', 'A', 'd', 'd', 'r', 'e', 's', 's', 0 };
+	WCHAR kernel32_dll_name[] = { 'K', 'e', 'r', 'n', 'e', 'l', '3', '2', '.', 'd', 'l', 'l', 0 };
+	HMODULE kernel32_dll;
 
+	// Get kernel32.dll
+	kernel32_dll = get_module_by_name(kernel32_dll_name);
+	if (kernel32_dll == NULL)
+		goto end;
 
-	user32_dll = get_module_by_name(user32_dll_name);
-	DWORD(WINAPI * msgbox)(_In_opt_ HWND hwnd, _In_opt_ LPCSTR lpText, _In_opt_ LPCSTR lpCaption, _In_ UINT uType) =
-		(int (WINAPI*)(_In_opt_ HWND, _In_opt_ LPCSTR, _In_opt_ LPCSTR, _In_ UINT)) get_func_by_name(user32_dll, msgbox_name);
-	msgbox(NULL, msg_box_content, msg_box_content, 0);
-	MessageBoxA(NULL, msg_box_content, msg_box_content, 0);
-	_asm
+	// Get load library function.
+	HMODULE(WINAPI * M_loadLibraryA)(_In_opt_ LPCSTR lpLibFileName) =
+		(HMODULE(WINAPI*)(_In_opt_ LPCSTR)) get_func_by_name(kernel32_dll, load_library_name);
+	if (M_loadLibraryA == NULL)
+		goto end;
+
+	// Get getProcAddress's 
+	FARPROC(WINAPI * M_getProcAddress)(_In_opt_ HMODULE hModule, _In_opt_ LPCSTR lProcName) =
+		(FARPROC(WINAPI*)(_In_opt_ HMODULE, _In_opt_ LPCSTR)) get_func_by_name(kernel32_dll, get_proc_address_name);
+	if (M_getProcAddress == NULL)
+		goto end;
+
+	// Get user32.dll
+	user32_dll = M_loadLibraryA(user32_dll_name);
+	if (user32_dll == NULL)
 	{
-		nop
+		printf("%d", GetLastError());
+		goto end;
 	}
+	// Get messageBoxA function
+	DWORD(WINAPI * M_messageBoxA)(_In_opt_ HWND hwnd, _In_opt_ LPCSTR lpText, _In_opt_ LPCSTR lpCaption, _In_ UINT uType) =
+		(int (WINAPI*)(_In_opt_ HWND, _In_opt_ LPCSTR, _In_opt_ LPCSTR, _In_ UINT)) M_getProcAddress(user32_dll, msgbox_name);
+	M_messageBoxA(NULL, msg_box_content, msg_box_content, 0);
+
+	MessageBoxA(NULL, msg_box_content, msg_box_content, 0);
+end:
+	return 0;
 }
