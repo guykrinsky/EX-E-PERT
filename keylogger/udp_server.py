@@ -16,14 +16,19 @@ def add_text_to_file(text: str, address: str):
         file.write(text)
 
 def main():
+# TODO: catch exceptions.
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as server_socket:
         print("server is up")
         server_socket.bind((IP_ADDRESS, PORT_NUMBER))
         while True:
             data, client_address = server_socket.recvfrom(1024)
-            text = data.decode()
-            print(f"message is {text} from {client_address}")
-            add_text_to_file(text, client_address[0])
+            try:
+                text = data.decode()
+                print(f"message is {text} from {client_address}")
+                add_text_to_file(text, client_address[0])
+            except UnicodeDecodeError:
+                print(f"can't print this char {data}")
+            
 
 
 if __name__ == "__main__":

