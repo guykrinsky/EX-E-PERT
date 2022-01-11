@@ -36,7 +36,7 @@ int main(int argc, char** argv)
     struct sockaddr_in server_address = { 0 };
     char msg_buf[MAX_MSG_LENGTH] = { 0 };
 
-    printf("Initialising Winsock...\n");
+    printf("Initializing Winsock...\n");
     if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
     {
         printf("Failed. Error Code : %d", WSAGetLastError());

