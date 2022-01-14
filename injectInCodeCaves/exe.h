@@ -1,10 +1,8 @@
 #pragma once
 #include <Windows.h>
 
-#define ROUND_TO_SECTION_ALIGNMENT(number){\
-                    number -= number % 0x1000;\
-                    number += 0x1000;\
-                    }
+#define USUALLY_SECTION_ALIGN 0x1000
+#define USUALLY_FILE_ALIGN 0x200
 
 struct Exe_file
 {
@@ -21,3 +19,5 @@ struct Exe_file
 typedef struct Exe_file EXE_file;
 
 DWORD set_exe_headers(EXE_file*);
+void create_new_section(EXE_file*, DWORD);
+DWORD align(DWORD, DWORD, DWORD);

