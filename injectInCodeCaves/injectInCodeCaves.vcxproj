@@ -24,6 +24,7 @@
     <ProjectGuid>{a234e717-2277-4e46-96b3-0f9a53acb8ca}</ProjectGuid>
     <RootNamespace>injectInCodeCaves</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>injector</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
