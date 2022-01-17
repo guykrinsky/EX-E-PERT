@@ -21,3 +21,4 @@ typedef struct Exe_file EXE_file;
 DWORD set_exe_headers(EXE_file*);
 void create_new_section(EXE_file*, DWORD);
 DWORD align(DWORD, DWORD, DWORD);
+DWORD add_file_empty_place(PCHAR, DWORD, DWORD*);
