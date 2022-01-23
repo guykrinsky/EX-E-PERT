@@ -141,11 +141,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="exe.c" />
+    <ClCompile Include="file_system.c" />
     <ClCompile Include="infect_main.c" />
     <ClCompile Include="shellcode_functions.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="exe.h" />
+    <ClInclude Include="file_system.h" />
     <ClInclude Include="shellcode_functions.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -11,6 +11,9 @@
     <Filter Include="shellcode">
       <UniqueIdentifier>{b3e5d9e7-e7b9-46b1-9f39-e7da7dcd3f2d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="file_system">
+      <UniqueIdentifier>{8cb8c85c-cbf5-4f92-8018-5de6725deeb3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="infect_main.c">
@@ -22,6 +25,9 @@
     <ClCompile Include="shellcode_functions.c">
       <Filter>shellcode</Filter>
     </ClCompile>
+    <ClCompile Include="file_system.c">
+      <Filter>file_system</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="exe.h">
@@ -29,6 +35,9 @@
     </ClInclude>
     <ClInclude Include="shellcode_functions.h">
       <Filter>shellcode</Filter>
+    </ClInclude>
+    <ClInclude Include="file_system.h">
+      <Filter>file_system</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

