@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31112.23
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "injector", "injectInCodeCaves\injectInCodeCaves.vcxproj", "{A234E717-2277-4E46-96B3-0F9A53ACB8CA}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "changeRegistry", "change_registry\change_registry.vcxproj", "{D8B31B37-53DC-4CAD-8893-C725370E5B6F}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "keyLogger", "keylogger\virus.vcxproj", "{583378D4-E8FB-4856-A45E-A084D469F45C}"
@@ -15,6 +13,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "shellcode_checker", "shellc
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "printFileSystem", "printFileSystem\printFileSystem.vcxproj", "{E60B491B-724C-45F2-A847-2B8F828D1FCA}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "injector", "injector\injector.vcxproj", "{A234E717-2277-4E46-96B3-0F9A53ACB8CA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -23,14 +23,6 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{A234E717-2277-4E46-96B3-0F9A53ACB8CA}.Debug|x64.ActiveCfg = Debug|x64
-		{A234E717-2277-4E46-96B3-0F9A53ACB8CA}.Debug|x64.Build.0 = Debug|x64
-		{A234E717-2277-4E46-96B3-0F9A53ACB8CA}.Debug|x86.ActiveCfg = Debug|Win32
-		{A234E717-2277-4E46-96B3-0F9A53ACB8CA}.Debug|x86.Build.0 = Debug|Win32
-		{A234E717-2277-4E46-96B3-0F9A53ACB8CA}.Release|x64.ActiveCfg = Release|x64
-		{A234E717-2277-4E46-96B3-0F9A53ACB8CA}.Release|x64.Build.0 = Release|x64
-		{A234E717-2277-4E46-96B3-0F9A53ACB8CA}.Release|x86.ActiveCfg = Release|Win32
-		{A234E717-2277-4E46-96B3-0F9A53ACB8CA}.Release|x86.Build.0 = Release|Win32
 		{D8B31B37-53DC-4CAD-8893-C725370E5B6F}.Debug|x64.ActiveCfg = Debug|x64
 		{D8B31B37-53DC-4CAD-8893-C725370E5B6F}.Debug|x64.Build.0 = Debug|x64
 		{D8B31B37-53DC-4CAD-8893-C725370E5B6F}.Debug|x86.ActiveCfg = Debug|Win32
@@ -71,6 +63,14 @@ Global
 		{E60B491B-724C-45F2-A847-2B8F828D1FCA}.Release|x64.Build.0 = Release|x64
 		{E60B491B-724C-45F2-A847-2B8F828D1FCA}.Release|x86.ActiveCfg = Release|Win32
 		{E60B491B-724C-45F2-A847-2B8F828D1FCA}.Release|x86.Build.0 = Release|Win32
+		{A234E717-2277-4E46-96B3-0F9A53ACB8CA}.Debug|x64.ActiveCfg = Debug|x64
+		{A234E717-2277-4E46-96B3-0F9A53ACB8CA}.Debug|x64.Build.0 = Debug|x64
+		{A234E717-2277-4E46-96B3-0F9A53ACB8CA}.Debug|x86.ActiveCfg = Debug|Win32
+		{A234E717-2277-4E46-96B3-0F9A53ACB8CA}.Debug|x86.Build.0 = Debug|Win32
+		{A234E717-2277-4E46-96B3-0F9A53ACB8CA}.Release|x64.ActiveCfg = Release|x64
+		{A234E717-2277-4E46-96B3-0F9A53ACB8CA}.Release|x64.Build.0 = Release|x64
+		{A234E717-2277-4E46-96B3-0F9A53ACB8CA}.Release|x86.ActiveCfg = Release|Win32
+		{A234E717-2277-4E46-96B3-0F9A53ACB8CA}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
