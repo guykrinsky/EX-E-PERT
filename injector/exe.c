@@ -89,7 +89,6 @@ DWORD add_file_empty_place(PCHAR file_name, DWORD size_of_appned, DWORD* result_
     PVOID zero_buffer = calloc(size_of_appned, 1);
     int result = 0;
 
-    printf("add empty place to %s\n", file_name);
     result = WriteFile(file_handle, zero_buffer, size_of_appned, NULL, NULL);
     if (result == 0)
     {
