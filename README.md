@@ -2,7 +2,7 @@
 Parasitic virus for windows.
 My project is only for study purposes.
 
-##How The Virus Works
+## How The Virus Works
 The victim needs to download and open the word file, while opening the Microsoft Word file, 
 Two files is being downloaded to the victim's computer, the shellcode and the injector from the http server.
 Than, the infector infects one of the executable file on the victim's computer.

