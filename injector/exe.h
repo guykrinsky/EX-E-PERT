@@ -22,3 +22,5 @@ DWORD set_exe_headers(EXE_file*);
 void create_new_section(EXE_file*, DWORD);
 DWORD align(DWORD, DWORD, DWORD);
 DWORD add_file_empty_place(PCHAR, DWORD, DWORD*);
+EXE_file* init_victim(char*, int, int*);
+void delete_EXE_file(EXE_file*);

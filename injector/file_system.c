@@ -131,6 +131,37 @@ bool get_suitable_file(char* directory_path, int depth, char file_full_path_out[
     return false;
 }
 
+void* read_entire_file(char* file_path, int* file_size, int *result)
+{
+    /// <param name="file_path"> path to file </param>
+    /// **out**<param name="file_size"> return size of the file </param>
+    /// **out**<param name="result"> result of function </param>
+    /// <returns> buffer with all of file data </returns>
+    void* file_data = NULL;
+    HANDLE file_handle = CreateFileA(file_path, GENERIC_READ, FILE_SHARE_READ,          // allow multiple readers
+		NULL,                     // no security
+		OPEN_ALWAYS,              // open or create
+		FILE_ATTRIBUTE_NORMAL,    // normal file
+		NULL);                    // no attr. template 
+	*file_size = GetFileSize(file_handle, 0);
+
+    file_data = malloc(file_size);
+	if (file_data == NULL)
+	{
+		*result = ERROR;
+		goto end;
+	}
+
+	if (!ReadFile(file_handle, file_data, file_size, 0, NULL))
+	{
+		result = ERROR;
+		goto end;
+	}
+
+    end:
+    return file_data;
+}
+
 void set_full_path(char* output, char* path_to_file, char* file_name)
 {
     strcpy(output, path_to_file);

