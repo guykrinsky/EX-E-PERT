@@ -1,0 +1,3 @@
+file check_that_dll_are_not_beeing_injected.dll is clear
+file msgBox2.exe is clear
+file msgBox4.exe is clear

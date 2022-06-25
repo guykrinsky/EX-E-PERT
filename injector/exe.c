@@ -23,7 +23,6 @@ DWORD set_exe_headers(EXE_file* exe_file)
 	/// </summary>
 	/// <param name="exe_file"></param>
 	/// <returns> function status </returns>
-	PIMAGE_SECTION_HEADER first_section_header = NULL;
 	exe_file->dosHeader = exe_file->mapped_handle;
 	DWORD relocation_table_end = 0;
 

